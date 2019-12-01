@@ -14,6 +14,8 @@ namespace Valkyrja.monitoring
 {
 	public class SigrunClient
 	{
+		private const string GameStatusUrl = "at https://valkyrja.app";
+
 		internal readonly DiscordSocketClient Client = new DiscordSocketClient();
 		private  readonly Config Config = Config.Load();
 		private  readonly Regex RegexCommandParams = new Regex("\"[^\"]+\"|\\S+", RegexOptions.Compiled);
@@ -69,7 +71,7 @@ namespace Valkyrja.monitoring
 			}
 		}*/
 
-		private void GetCommandAndParams(string message, out string command, out string trimmedMessage, out string[] parameters)
+		private void GetCommandAndParams(string prefix, string message, out string command, out string trimmedMessage, out string[] parameters)
 		{
 			string input = message.Substring(this.Config.Prefix.Length);
 			trimmedMessage = "";
@@ -138,12 +140,14 @@ namespace Valkyrja.monitoring
 
 		private async Task HandleCommands(SocketMessage socketMessage)
 		{
-			if( !(socketMessage.Channel is SocketGuildChannel channel && this.Prefixes.ContainsKey(channel.Guild.Id) && socketMessage.Content.StartsWith(this.Prefixes[channel.Guild.Id])) )
+			SocketGuildChannel channel = socketMessage.Channel as SocketGuildChannel;
+			string prefix = this.Prefixes.ContainsKey(channel?.Guild?.Id ?? 0) ? this.Prefixes[channel.Guild.Id] : this.Config.Prefix;
+			if( channel == null || !socketMessage.Content.StartsWith(prefix) )
 				return;
 
 			string commandString = "", trimmedMessage = "";
 			string[] parameters;
-			GetCommandAndParams(socketMessage.Content, out commandString, out trimmedMessage, out parameters);
+			GetCommandAndParams(prefix, socketMessage.Content, out commandString, out trimmedMessage, out parameters);
 			string response = "";
 			commandString = commandString.ToLower();
 
@@ -156,6 +160,7 @@ namespace Valkyrja.monitoring
 						{
 							this.Maintenance = true;
 							response = "State: `Down for Maintenance`";
+							await this.Client.SetGameAsync("in maintenance mode...");
 						}
 						break;
 					case "endmaintenance":
@@ -163,6 +168,7 @@ namespace Valkyrja.monitoring
 						{
 							this.Maintenance = false;
 							response = "State: `Online`";
+							await this.Client.SetGameAsync(GameStatusUrl);
 						}
 						break;
 					default:
