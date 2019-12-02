@@ -140,9 +140,9 @@ namespace Valkyrja.monitoring
 
 		private async Task HandleCommands(SocketMessage socketMessage)
 		{
-			SocketGuildChannel channel = socketMessage.Channel as SocketGuildChannel;
+			SocketGuildChannel channel = socketMessage?.Channel as SocketGuildChannel;
 			string prefix = this.Prefixes.ContainsKey(channel?.Guild?.Id ?? 0) ? this.Prefixes[channel.Guild.Id] : this.Config.Prefix;
-			if( channel == null || !socketMessage.Content.StartsWith(prefix) )
+			if( channel == null || socketMessage == null || !(socketMessage.Content?.StartsWith(prefix) ?? true) )
 				return;
 
 			string commandString = "", trimmedMessage = "";
