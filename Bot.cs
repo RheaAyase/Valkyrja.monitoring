@@ -73,7 +73,7 @@ namespace Valkyrja.monitoring
 
 		private void GetCommandAndParams(string prefix, string message, out string command, out string trimmedMessage, out string[] parameters)
 		{
-			string input = message.Substring(this.Config.Prefix.Length);
+			string input = message.Substring(prefix.Length);
 			trimmedMessage = "";
 			parameters = null;
 
@@ -142,7 +142,7 @@ namespace Valkyrja.monitoring
 		{
 			SocketGuildChannel channel = socketMessage?.Channel as SocketGuildChannel;
 			string prefix = this.Prefixes.ContainsKey(channel?.Guild?.Id ?? 0) ? this.Prefixes[channel.Guild.Id] : this.Config.Prefix;
-			if( channel == null || socketMessage == null || !(socketMessage.Content?.StartsWith(prefix) ?? true) )
+			if( channel == null || socketMessage == null || string.IsNullOrWhiteSpace(socketMessage.Content) || !socketMessage.Content.StartsWith(prefix) )
 				return;
 
 			string commandString = "", trimmedMessage = "";
