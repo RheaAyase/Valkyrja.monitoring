@@ -15,6 +15,7 @@ namespace Valkyrja.monitoring
 
 		public string BotToken = "";
 		public string Prefix = "!";
+		public string AltPrefix = "?";
 		public bool UseApi = false;
 		//public float TargetFps = 0.03f;
 		//public string Host = "127.0.0.1";

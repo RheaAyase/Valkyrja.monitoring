@@ -142,12 +142,15 @@ namespace Valkyrja.monitoring
 		{
 			SocketGuildChannel channel = socketMessage?.Channel as SocketGuildChannel;
 			string prefix = this.Prefixes.ContainsKey(channel?.Guild?.Id ?? 0) ? this.Prefixes[channel.Guild.Id] : this.Config.Prefix;
-			if( channel == null || socketMessage == null || string.IsNullOrWhiteSpace(socketMessage.Content) || !socketMessage.Content.StartsWith(prefix) )
+			string altPrefix = this.Config.UseApi ? "": this.Config.AltPrefix;
+			if( channel == null || socketMessage == null || string.IsNullOrWhiteSpace(socketMessage.Content) )
 				return;
 
-			string commandString = "", trimmedMessage = "";
-			string[] parameters;
-			GetCommandAndParams(prefix, socketMessage.Content, out commandString, out trimmedMessage, out parameters);
+			prefix = socketMessage.Content.StartsWith(prefix) ? prefix : socketMessage.Content.StartsWith(altPrefix) ? altPrefix : null;
+			if( prefix == null )
+				return;
+
+			GetCommandAndParams(prefix, socketMessage.Content, out string commandString, out string _, out string[] _);
 			string response = "";
 			commandString = commandString.ToLower();
 
