@@ -150,7 +150,7 @@ namespace Valkyrja.monitoring
 			if( prefix == null )
 				return;
 
-			GetCommandAndParams(prefix, socketMessage.Content, out string commandString, out string _, out string[] _);
+			GetCommandAndParams(prefix, socketMessage.Content, out string commandString, out string trimmedMessage, out string[] _);
 			string response = "";
 			commandString = commandString.ToLower();
 
@@ -174,10 +174,23 @@ namespace Valkyrja.monitoring
 							await this.Client.SetGameAsync(GameStatusUrl);
 						}
 						break;
+					case "setnews":
+						if( this.Config.AdminIDs.Contains(socketMessage.Author.Id) )
+						{
+							this.Config.NewsMessage = trimmedMessage;
+							response = "News message set.";
+						}
+						break;
+					case "valknews":
+						if( this.Maintenance )
+						{
+							response = this.Config.NewsMessage;
+						}
+						break;
 					default:
 						if( this.Maintenance )
 						{
-							if( Config.Commands.Contains(commandString) )
+							if( this.Config.Commands.Contains(commandString) )
 								response = this.Config.MaintenanceMessage;
 						}
 						else

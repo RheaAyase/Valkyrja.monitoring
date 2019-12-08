@@ -26,7 +26,8 @@ namespace Valkyrja.monitoring
 		//public guid PrintShardsOnGuildId;
 		public guid[] AdminIDs = { Rhea, 89777099576979456 };
 		public string[] Commands = { "ping", "help" };
-		public string MaintenanceMessage = "Valkyrja is down for maintenance that may take a while - to receive updates please see the `#news` channel in **Valhalla**.";
+		public string MaintenanceMessage = "Valkyrja is down for maintenance that may take a while - to receive updates please see the `#news` channel in **Valhalla** (or use a `!valkNews` command.)";
+		public string NewsMessage = "";
 		public string DownMessage = "Valkyrja is currently down for really quick maintenance!";
 
 		private Config(){}
