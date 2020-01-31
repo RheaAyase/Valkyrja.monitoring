@@ -5,6 +5,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
+using System.Threading;
 using Discord;
 using Discord.WebSocket;
 
@@ -17,17 +19,19 @@ namespace Valkyrja.monitoring
 		private const string GameStatusUrl = "at https://valkyrja.app";
 
 		internal readonly DiscordSocketClient Client = new DiscordSocketClient();
-		private  readonly Config Config = Config.Load();
-		private  readonly Regex RegexCommandParams = new Regex("\"[^\"]+\"|\\S+", RegexOptions.Compiled);
+		private readonly Monitoring Monitoring;
+		private readonly Config Config = Config.Load();
+		private readonly Regex RegexCommandParams = new Regex("\"[^\"]+\"|\\S+", RegexOptions.Compiled);
 		private readonly HttpClient HttpClient = new HttpClient();
-		//private CancellationTokenSource MainUpdateCancel;
-		//private Task MainUpdateTask;
+		private CancellationTokenSource MainUpdateCancel;
+		private Task MainUpdateTask;
 
 		private bool Maintenance = false;
 		private Dictionary<guid, string> Prefixes = new Dictionary<guid,String>();
 
 		public SigrunClient()
 		{
+			this.Monitoring = new Monitoring(this.Config);
 			this.Client.MessageReceived += ClientOnMessageReceived;
 			this.Client.MessageUpdated += ClientOnMessageUpdated;
 			this.Client.Disconnected += ClientDisconnected;
@@ -43,19 +47,22 @@ namespace Valkyrja.monitoring
 			this.HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
 			this.HttpClient.DefaultRequestHeaders.Add("User-Agent", "Valkyrja Monitoring");
 
-			/*if( this.MainUpdateTask == null )
+			if( this.MainUpdateTask == null )
 			{
 				this.MainUpdateCancel = new CancellationTokenSource();
 				this.MainUpdateTask = Task.Factory.StartNew(MainUpdate, this.MainUpdateCancel.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-			}*/
+			}
 		}
 
 //Update
-		/*private async Task MainUpdate()
+		private async Task MainUpdate()
 		{
 			while( !this.MainUpdateCancel.IsCancellationRequested )
 			{
 				DateTime frameTime = DateTime.UtcNow;
+
+				Ping ping = new Ping();
+				this.Monitoring.LatencyRedbox.Set((await ping.SendPingAsync(this.Config.PrometheusRedboxHost)).RoundtripTime);
 
 				if( this.Client.ConnectionState != ConnectionState.Connected ||
 				    this.Client.LoginState != LoginState.LoggedIn )
@@ -69,7 +76,7 @@ namespace Valkyrja.monitoring
 				TimeSpan deltaTime = DateTime.UtcNow - frameTime;
 				await Task.Delay(TimeSpan.FromMilliseconds(Math.Max(1, (TimeSpan.FromSeconds(1f / this.Config.TargetFps) - deltaTime).TotalMilliseconds)));
 			}
-		}*/
+		}
 
 		private void GetCommandAndParams(string prefix, string message, out string command, out string trimmedMessage, out string[] parameters)
 		{

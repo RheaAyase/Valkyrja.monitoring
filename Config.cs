@@ -17,7 +17,10 @@ namespace Valkyrja.monitoring
 		public string Prefix = "!";
 		public string AltPrefix = "?";
 		public bool UseApi = false;
-		//public float TargetFps = 0.03f;
+		public float TargetFps = 0.2f;
+		public string PrometheusEndpoint = "";
+		public string PrometheusJob = "";
+		public string PrometheusRedboxHost = "";
 		//public string Host = "127.0.0.1";
 		//public string Port = "3306";
 		//public string Username = "db_user";
